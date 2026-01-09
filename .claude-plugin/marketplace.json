@@ -1,0 +1,15 @@
+{
+  "name": "crapola",
+  "owner": {
+    "name": "Dane Grant"
+  },
+  "plugins": [
+    {
+      "name": "share-session",
+      "source": "./plugin",
+      "description": "Adds a /share command to share Claude Code sessions to a web url",
+      "category": "collaboration",
+      "tags": ["session", "share", "export", "collaboration"]
+    }
+  ]
+}

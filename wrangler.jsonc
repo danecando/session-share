@@ -1,0 +1,28 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "session-share",
+  "compatibility_date": "2025-09-02",
+  "compatibility_flags": ["nodejs_compat"],
+  "main": "@tanstack/react-start/server-entry",
+  "workers_dev": false,
+  "preview_urls": false,
+  "routes": [
+    {
+      "pattern": "share.crapola.ai",
+      "zone_name": "crapola.ai",
+      "custom_domain": true,
+    },
+  ],
+  "r2_buckets": [
+    {
+      "bucket_name": "session-share-sessions",
+      "binding": "R2_SESSIONS",
+    },
+  ],
+  "vars": {
+    "VITE_SENTRY_DSN": "https://5c2b6a8532773312b90b9ad0da247ddc@o1235506.ingest.us.sentry.io/4510660773281792",
+    "VITE_SENTRY_ORG": "danecando",
+    "VITE_SENTRY_PROJECT": "session-share",
+    "VITE_FATHOM_ID": "YNCBGGLI",
+  },
+}

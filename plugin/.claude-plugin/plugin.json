@@ -1,0 +1,14 @@
+{
+  "name": "share-session",
+  "version": "1.0.0",
+  "description": "Adds a /share command to share Claude Code sessions to a web url",
+  "author": {
+    "name": "Dane Grant",
+    "url": "https://github.com/danecando"
+  },
+  "repository": "https://github.com/danecando/session-share",
+  "homepage": "https://share.crapola.ai",
+  "license": "MIT",
+  "keywords": ["session", "share", "collaboration", "export"],
+  "commands": ["./commands/share.md"]
+}
