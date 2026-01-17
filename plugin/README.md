@@ -11,7 +11,7 @@ A Claude Code plugin that lets you share your sessions via shareable URLs.
 /plugin marketplace add danecando/session-share
 
 # Install the plugin
-/plugin install share-session@crapola
+/plugin install share-session@danecando
 ```
 
 ### Local
@@ -21,7 +21,7 @@ A Claude Code plugin that lets you share your sessions via shareable URLs.
 /plugin marketplace add ./.claude-plugin/marketplace.json
 
 # Install the plugin
-/plugin install share-session@crapola
+/plugin install share-session@danecando
 ```
 
 ## Usage

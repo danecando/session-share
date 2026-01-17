@@ -77,7 +77,7 @@ function HomePage() {
             <div className="relative group mt-6">
               <p className="mb-2 text-center text-muted-foreground">Install the share-session plugin</p>
               <CodeBlock>
-                <Command>/plugin install share-session@crapola</Command>
+                <Command>/plugin install share-session@danecando</Command>
               </CodeBlock>
             </div>
           </section>

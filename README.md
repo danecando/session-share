@@ -16,7 +16,7 @@ contain sensitive information.
 /plugin marketplace add danecando/session-share
 
 # Install the plugin
-/plugin install share-session@crapola
+/plugin install share-session@danecando
 ```
 
 ## Usage
