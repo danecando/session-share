@@ -69,13 +69,14 @@ function HomePage() {
           <section className="max-w-4xl mx-auto">
             <h2 className="text-2xl font-bold text-foreground text-center">Install the Claude Code plugin</h2>
             <div className="relative group mt-6">
+              <p className="mb-2 text-center text-muted-foreground">Add the plugin marketplace</p>
               <CodeBlock>
-                <Comment># Add the marketplace</Comment>
-                {"\n"}
                 <Command>/plugin marketplace add danecando/session-share</Command>
-                {"\n\n"}
-                <Comment># Install the plugin</Comment>
-                {"\n"}
+              </CodeBlock>
+            </div>
+            <div className="relative group mt-6">
+              <p className="mb-2 text-center text-muted-foreground">Install the share-session plugin</p>
+              <CodeBlock>
                 <Command>/plugin install share-session@crapola</Command>
               </CodeBlock>
             </div>
