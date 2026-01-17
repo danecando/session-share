@@ -114,13 +114,13 @@ function SessionContent({ entries }: { entries: Array<PrerenderedEntry> }) {
     : entries.filter((entry: PrerenderedEntry) => !isVerboseOnlyEntry(entry));
 
   return (
-    <main className="min-h-screen bg-background flex flex-col">
-      <div className="max-w-3xl mx-auto py-8 px-4 sm:px-6 lg:px-8 flex flex-col flex-1">
+    <main className="min-h-screen bg-background flex flex-col w-full max-w-full overflow-x-hidden">
+      <div className="w-full max-w-3xl mx-auto py-8 px-4 sm:px-6 lg:px-8 flex flex-col flex-1">
         {visibleEntries.map((entry: PrerenderedEntry, index: number) => (
           <div
             key={entry.id ?? `entry-${index}`}
             data-entry-id={entry.id ?? `entry-${index}`}
-            className="mt-6 first:mt-0"
+            className="mt-6 first:mt-0 min-w-0"
           >
             <EntryRenderer entry={entry} />
           </div>

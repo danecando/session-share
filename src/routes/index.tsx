@@ -2,7 +2,7 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 import { AlertTriangleIcon, BotMessageSquareIcon, MessageSquareCodeIcon } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { CodeBlock, CodeLink, Command, Comment } from "@/components/CodeBlock";
+import { CodeBlock, CodeLink, Command } from "@/components/CodeBlock";
 import { seo } from "@/lib/seo";
 
 export const Route = createFileRoute("/")({
@@ -23,14 +23,14 @@ export const Route = createFileRoute("/")({
 
 function HomePage() {
   return (
-    <div className="min-h-screen bg-background relative overflow-hidden flex flex-col">
+    <div className="min-h-screen bg-background relative flex flex-col w-full max-w-full overflow-x-hidden">
       {/* Gradient Background */}
       <div className="absolute inset-0 bg-linear-to-br from-violet-500/10 via-background to-cyan-500/10 pointer-events-none" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,var(--tw-gradient-stops))] from-violet-600/20 via-transparent to-transparent pointer-events-none" />
 
       {/* Hero Section */}
-      <div className="relative max-w-6xl mx-auto px-4 pt-20 pb-24 flex-1">
-        <div className="space-y-16 md:space-y-20">
+      <div className="relative w-full max-w-6xl mx-auto px-4 pt-12 sm:pt-20 pb-16 sm:pb-24 flex-1">
+        <div className="space-y-12 sm:space-y-16 md:space-y-20">
           <header className="text-center">
             <div className="flex items-center justify-center gap-4 mb-6">
               <div className="relative">
@@ -38,18 +38,18 @@ function HomePage() {
                 <MessageSquareCodeIcon className="relative w-16 h-16 text-foreground" />
               </div>
             </div>
-            <h1 className="text-6xl font-bold text-foreground">Session Share</h1>
-            <p className="text-xl text-muted-foreground mt-4 max-w-2xl mx-auto">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-foreground">Session Share</h1>
+            <p className="text-base sm:text-xl text-muted-foreground mt-4 max-w-2xl mx-auto px-2">
               The hottest place to share your Claude Code sessions blazingly fast.
             </p>
-            <div className="flex gap-4 justify-center mt-8">
-              <Button size="lg" asChild>
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center mt-8">
+              <Button size="lg" className="w-full sm:w-auto" asChild>
                 <Link to="/$id" params={{ id: "-pdYfEVVb5" }}>
                   <BotMessageSquareIcon />
                   Example Session
                 </Link>
               </Button>
-              <Button size="lg" variant="outline" asChild>
+              <Button size="lg" variant="outline" className="w-full sm:w-auto" asChild>
                 <a href="https://github.com/danecando/session-share" target="_blank" rel="noopener noreferrer">
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path
@@ -66,8 +66,8 @@ function HomePage() {
           </header>
 
           {/* Installation */}
-          <section className="max-w-4xl mx-auto">
-            <h2 className="text-2xl font-bold text-foreground text-center">Install the Claude Code plugin</h2>
+          <section className="w-full max-w-4xl mx-auto overflow-hidden">
+            <h2 className="text-xl sm:text-2xl font-bold text-foreground text-center">Install the Claude Code plugin</h2>
             <div className="relative group mt-6">
               <p className="mb-2 text-center text-muted-foreground">Add the plugin marketplace</p>
               <CodeBlock>
@@ -83,10 +83,10 @@ function HomePage() {
           </section>
 
           {/* Share a session */}
-          <section className="max-w-2xl mx-auto">
-            <h2 className="text-2xl font-bold text-foreground text-center">Share a session</h2>
-            <p className="text-center text-muted-foreground mt-4 max-w-prose mx-auto">
-              After installing the plugin, use the <code>/share-session:share</code> command in Claude Code to share
+          <section className="w-full max-w-2xl mx-auto overflow-hidden">
+            <h2 className="text-xl sm:text-2xl font-bold text-foreground text-center">Share a session</h2>
+            <p className="text-center text-muted-foreground mt-4 max-w-prose mx-auto px-2">
+              After installing the plugin, use the <code className="break-all">/share-session:share</code> command in Claude Code to share
               your current session.
             </p>
 

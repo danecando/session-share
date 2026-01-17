@@ -18,7 +18,7 @@ export function Command({ children }: { children: React.ReactNode }) {
 
 export function CodeLink({ href }: { href: string }) {
   return (
-    <a href={href} target="_blank" rel="noopener noreferrer" className="hover:underline">
+    <a href={href} target="_blank" rel="noopener noreferrer" className="hover:underline break-all">
       {href}
     </a>
   );
@@ -36,8 +36,8 @@ export function CodeBlock({ children, className, copyable = true }: CodeBlockPro
   };
 
   return (
-    <div className={cn("relative group", className)}>
-      <pre className="border border-border rounded-lg p-6 overflow-x-auto text-lg leading-relaxed bg-[#0a0c10] shadow-[0_0_0_1px_rgba(255,255,255,0.05),0_4px_20px_rgba(0,0,0,0.3)]">
+    <div className={cn("relative group w-full max-w-full", className)}>
+      <pre className="border border-border rounded-lg p-4 sm:p-6 overflow-x-auto text-sm sm:text-lg leading-relaxed bg-[#0a0c10] shadow-[0_0_0_1px_rgba(255,255,255,0.05),0_4px_20px_rgba(0,0,0,0.3)] max-w-full">
         <code ref={codeRef} className="text-[#f0f3f6] font-mono">
           {children}
         </code>

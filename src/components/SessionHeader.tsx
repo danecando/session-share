@@ -88,7 +88,7 @@ export function SessionHeader() {
               {displayLabel}
             </small>
             {agentLabel ? (
-              <span className="shrink-0 rounded-full border border-border/70 bg-muted/40 px-2 py-0.5 text-[11px] text-muted-foreground">
+              <span className="hidden sm:inline-block shrink-0 rounded-full border border-border/70 bg-muted/40 px-2 py-0.5 text-[11px] text-muted-foreground">
                 {agentLabel}
               </span>
             ) : null}
@@ -102,7 +102,7 @@ export function SessionHeader() {
                   <Info className="h-4 w-4" />
                 </button>
               </PopoverTrigger>
-              <PopoverContent align="start" className="w-80">
+              <PopoverContent align="start" className="w-[calc(100vw-2rem)] sm:w-80 max-w-80">
                 <div className="space-y-3">
                   <h4 className="font-medium text-sm">Session Info</h4>
                   <dl className="space-y-2 text-sm">
@@ -195,7 +195,7 @@ export function SessionHeader() {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="sm">
                 <Share2 className="h-4 w-4" />
-                Share
+                <span className="hidden sm:inline">Share</span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">

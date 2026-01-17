@@ -107,9 +107,9 @@ export function ToolCallEntry({ entry }: ToolCallEntryProps) {
   const isErrorResult = entry.result?.type === "error";
 
   return (
-    <div className="space-y-2">
-      <div className="text-sm">
-        <span className={cn("font-mono font-medium", isErrorResult ? "text-red-500/80" : "text-foreground/80")}>
+    <div className="space-y-2 min-w-0">
+      <div className="text-sm min-w-0 break-words">
+        <span className={cn("font-mono font-medium break-all", isErrorResult ? "text-red-500/80" : "text-foreground/80")}>
           {title}
           {resultSummary && (
             <span className={cn("opacity-70", isErrorResult ? "text-red-500" : "text-muted-foreground")}>

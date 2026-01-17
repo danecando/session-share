@@ -117,6 +117,8 @@
   body {
     @apply bg-background text-foreground;
     font-family: var(--font-sans);
+    word-wrap: break-word;
+    overflow-wrap: break-word;
   }
 
   code,
