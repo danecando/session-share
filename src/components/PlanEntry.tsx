@@ -1,10 +1,34 @@
 import { ClipboardList, User } from "lucide-react";
 import { HighlightedMarkdown } from "./HighlightedMarkdown";
 import type { PrerenderedPlanEntry } from "@/lib/prerender-entries";
+import { CollapsiblePanel } from "@/components/CollapsiblePanel";
 import { cn } from "@/lib/utils";
 
 interface PlanEntryProps {
   entry: PrerenderedPlanEntry;
+}
+
+function PlanContentBody({ entry }: PlanEntryProps) {
+  return entry.prerenderedHtml ? (
+    <div className="markdown-content">
+      <HighlightedMarkdown html={entry.prerenderedHtml} />
+    </div>
+  ) : (
+    <div className="markdown-content whitespace-pre-wrap">{entry.content}</div>
+  );
+}
+
+function UserFeedback({ feedback }: { feedback: string }) {
+  return (
+    <div className="relative min-w-0 flex items-start gap-2 lg:block mt-4">
+      <div className="flex items-center justify-center shrink-0 lg:absolute lg:-left-8 lg:top-0.5">
+        <User className="h-5 w-5 text-red-500" />
+      </div>
+      <div className="min-w-0 flex-1 font-medium markdown-content text-foreground whitespace-pre-wrap">
+        {feedback}
+      </div>
+    </div>
+  );
 }
 
 export function PlanEntry({ entry }: PlanEntryProps) {
@@ -26,23 +50,23 @@ export function PlanEntry({ entry }: PlanEntryProps) {
         </span>
       </div>
 
-      {entry.prerenderedHtml ? (
-        <div className="markdown-content">
-          <HighlightedMarkdown html={entry.prerenderedHtml} />
-        </div>
-      ) : (
-        <div className="markdown-content whitespace-pre-wrap">{entry.content}</div>
-      )}
+      {entry.status === "rejected" ? (
+        <>
+          {/* Title always visible for rejected plans */}
+          {entry.title && (
+            <div className="markdown-content font-medium text-foreground">Plan: {entry.title}</div>
+          )}
 
-      {entry.status === "rejected" && entry.feedback && (
-        <div className="relative min-w-0 flex items-start gap-2 lg:block mt-6">
-          <div className="flex items-center justify-center shrink-0 lg:absolute lg:-left-8 lg:top-0.5">
-            <User className="h-5 w-5 text-red-500" />
-          </div>
-          <div className="min-w-0 flex-1 font-medium markdown-content text-foreground whitespace-pre-wrap">
-            {entry.feedback}
-          </div>
-        </div>
+          {/* Plan content collapsed by default */}
+          <CollapsiblePanel title="Read full plan" defaultOpen={false}>
+            <PlanContentBody entry={entry} />
+          </CollapsiblePanel>
+
+          {/* Feedback always visible */}
+          {entry.feedback && <UserFeedback feedback={entry.feedback} />}
+        </>
+      ) : (
+        <PlanContentBody entry={entry} />
       )}
     </div>
   );

@@ -50,7 +50,7 @@ export function MessageEntry({ entry }: MessageEntryProps) {
         <div className="flex items-center justify-center shrink-0 lg:absolute lg:-left-8 lg:top-0.5">
           <User className="h-5 w-5 text-sky-500" />
         </div>
-        <div className="min-w-0 flex-1 font-medium markdown-content text-foreground">
+        <div className="min-w-0 flex-1 font-medium markdown-content text-white">
           {contentText && <ContentParts content={entry.content} />}
           {hasImages && <ImageGallery images={entry.images!} />}
         </div>
@@ -65,7 +65,7 @@ export function MessageEntry({ entry }: MessageEntryProps) {
         <div className="flex items-center justify-center shrink-0 lg:absolute lg:-left-8 lg:top-0.5">
           <Bot className="h-5 w-5 text-emerald-500" />
         </div>
-        <div className="min-w-0 flex-1 markdown-content">
+        <div className="min-w-0 flex-1 markdown-content text-gray-50">
           <HighlightedMarkdown html={entry.prerenderedHtml} />
           {hasImages && <ImageGallery images={entry.images!} />}
         </div>
@@ -79,7 +79,7 @@ export function MessageEntry({ entry }: MessageEntryProps) {
       <div className="flex items-center justify-center shrink-0 lg:absolute lg:-left-8 lg:top-0.5">
         <Bot className="h-5 w-5 text-emerald-500" />
       </div>
-      <div className="min-w-0 flex-1 markdown-content">
+      <div className="min-w-0 flex-1 markdown-content text-gray-50">
         {contentText && <ContentParts content={entry.content} />}
         {hasImages && <ImageGallery images={entry.images!} />}
       </div>
