@@ -68,6 +68,7 @@
     "zod": "^4.1.11"
   },
   "devDependencies": {
+    "@sentry/vite-plugin": "^4.6.2",
     "@tanstack/devtools-vite": "^0.4.1",
     "@tanstack/eslint-config": "^0.3.4",
     "@testing-library/dom": "^10.4.1",
