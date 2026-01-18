@@ -1,3 +1,5 @@
+import { useState } from "react";
+import { ChevronRight } from "lucide-react";
 import { CodeBlock } from "./CodeBlock";
 import type { ToolCallEntry as ToolCallEntryType } from "@/lib/session-schema";
 import { asObjectInput, toDisplayPath, toolOutputToText } from "@/lib/session-utils";
@@ -6,6 +8,43 @@ import { cn } from "@/lib/utils";
 
 interface ToolCallEntryProps {
   entry: ToolCallEntryType;
+}
+
+function parseMcpToolName(name: string): { server: string; fn: string } | null {
+  const match = name.match(/^mcp__([^_]+)__(.+)$/);
+  if (!match) return null;
+  return { server: match[1], fn: match[2] };
+}
+
+function getMcpInputSummary(input: Record<string, unknown> | undefined): string | null {
+  if (!input) return null;
+
+  // Priority order of common input parameter names
+  const primaryKeys = [
+    "query", // search tools (tanstack, sentry)
+    "naturalLanguageQuery", // sentry search
+    "url", // web fetch tools
+    "path", // file/doc tools
+    "pattern", // pattern matching
+    "prompt", // AI tools
+    "command", // command execution
+    "issueUrl", // sentry issue tools
+    "issueId", // sentry issue tools
+  ];
+
+  for (const key of primaryKeys) {
+    const value = input[key];
+    if (typeof value === "string" && value.trim()) {
+      const trimmed = value.trim();
+      // Truncate long values
+      if (trimmed.length > 50) {
+        return trimmed.slice(0, 47) + "...";
+      }
+      return trimmed;
+    }
+  }
+
+  return null;
 }
 
 function getResultSummary(toolName: string, result: string | undefined): string | null {
@@ -52,13 +91,28 @@ function getResultSummary(toolName: string, result: string | undefined): string 
       }
       return null;
     }
-    default:
+    default: {
+      // Handle MCP tools
+      if (parseMcpToolName(toolName)) {
+        try {
+          const data = JSON.parse(result);
+          if (Array.isArray(data.results)) return `${data.results.length} result${data.results.length !== 1 ? "s" : ""}`;
+          if (Array.isArray(data.items)) return `${data.items.length} item${data.items.length !== 1 ? "s" : ""}`;
+          if (Array.isArray(data.issues)) return `${data.issues.length} issue${data.issues.length !== 1 ? "s" : ""}`;
+          if (Array.isArray(data)) return `${data.length} item${data.length !== 1 ? "s" : ""}`;
+          return "Completed";
+        } catch {
+          return "Completed";
+        }
+      }
       return null;
+    }
   }
 }
 
 export function ToolCallEntry({ entry }: ToolCallEntryProps) {
   const { metadata } = useSessionViewerContext();
+  const [isExpanded, setIsExpanded] = useState(false);
   const toolName = entry.name;
   const input = asObjectInput(entry.input);
   const result = toolOutputToText(entry.result);
@@ -96,29 +150,65 @@ export function ToolCallEntry({ entry }: ToolCallEntryProps) {
         const label = desc || subagent;
         return label ? `Task(${label})` : "Task";
       }
-      default:
+      default: {
+        const mcpInfo = parseMcpToolName(toolName);
+        if (mcpInfo) {
+          const inputSummary = getMcpInputSummary(input);
+          if (inputSummary) {
+            return `MCP: ${mcpInfo.server}.${mcpInfo.fn}("${inputSummary}")`;
+          }
+          return `MCP: ${mcpInfo.server}.${mcpInfo.fn}`;
+        }
         return toolName;
+      }
     }
   };
 
   const title = getToolTitle();
-  const isCompactTool = ["Read", "Bash", "Grep", "Glob", "Skill", "Write", "Edit"].includes(toolName);
+  const isMcpTool = toolName.startsWith("mcp__");
+  const isCompactTool = isMcpTool || ["Read", "Bash", "Grep", "Glob", "Skill", "Write", "Edit"].includes(toolName);
   const resultSummary = isCompactTool ? getResultSummary(toolName, result) : null;
   const isErrorResult = entry.result?.type === "error";
+  const isExpandable = isMcpTool && result;
 
   return (
     <div className="space-y-2 min-w-0">
       <div className="text-sm min-w-0 break-words">
-        <span className={cn("font-mono font-medium break-all", isErrorResult ? "text-red-500/80" : "text-foreground/80")}>
-          {title}
-          {resultSummary && (
-            <span className={cn("opacity-70", isErrorResult ? "text-red-500" : "text-muted-foreground")}>
-              {" "}
-              - {resultSummary}
+        {isExpandable ? (
+          <button
+            onClick={() => setIsExpanded(!isExpanded)}
+            className={cn(
+              "flex items-start gap-1 font-mono font-medium break-all text-left",
+              isErrorResult ? "text-red-500/80 hover:text-red-500" : "text-foreground/80 hover:text-foreground"
+            )}
+          >
+            <ChevronRight
+              className={cn("h-4 w-4 shrink-0 transition-transform", isExpanded && "rotate-90")}
+            />
+            <span className="break-all">
+              {title}
+              {resultSummary && (
+                <span className={cn("opacity-70", isErrorResult ? "text-red-500" : "text-muted-foreground")}>
+                  {" "}
+                  - {resultSummary}
+                </span>
+              )}
             </span>
-          )}
-        </span>
+          </button>
+        ) : (
+          <span className={cn("font-mono font-medium break-all", isErrorResult ? "text-red-500/80" : "text-foreground/80")}>
+            {title}
+            {resultSummary && (
+              <span className={cn("opacity-70", isErrorResult ? "text-red-500" : "text-muted-foreground")}>
+                {" "}
+                - {resultSummary}
+              </span>
+            )}
+          </span>
+        )}
       </div>
+
+      {isExpandable && isExpanded && result && <CodeBlock>{result}</CodeBlock>}
 
       {!isCompactTool && entry.input && <CodeBlock>{JSON.stringify(entry.input, null, 2)}</CodeBlock>}
 

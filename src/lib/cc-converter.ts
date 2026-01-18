@@ -204,6 +204,7 @@ export function ccSessionToSession(
   let sessionSlug = "";
   let customTitle: string | undefined;
   let planTitle: string | undefined;
+  let planTitleApproved = false;
   let startedAt: string | undefined;
   let cwd: string | undefined;
   let gitBranch: string | undefined;
@@ -524,14 +525,20 @@ export function ccSessionToSession(
             const planText = plansByToolId.get(toolUseId)!;
             const title = extractPlanTitle(planText);
 
+            // Track first plan title as fallback
+            if (!planTitle) {
+              planTitle = title;
+            }
+
             let status: "pending" | "approved" | "rejected";
             let feedback: string | undefined;
 
             if (/approved your plan/i.test(resultText)) {
               status = "approved";
-              // Track first approved plan's title for session title
-              if (!planTitle) {
+              // First approved plan takes priority
+              if (!planTitleApproved) {
                 planTitle = title;
+                planTitleApproved = true;
               }
             } else if (/rejected|doesn't want to proceed/i.test(resultText)) {
               status = "rejected";
@@ -660,7 +667,7 @@ export function ccSessionToSession(
     },
     meta: {
       id: sessionId || "unknown",
-      // Title priority: customTitle (user-set) > planTitle (first approved) > sessionTitle (last summary) > sessionSlug
+      // Title priority: customTitle > planTitle (approved or first) > sessionTitle > sessionSlug
       ...(customTitle && { title: customTitle }),
       ...(!customTitle && planTitle && { title: planTitle }),
       ...(!customTitle && !planTitle && sessionTitle && { title: sessionTitle }),
