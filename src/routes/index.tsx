@@ -44,7 +44,7 @@ function HomePage() {
             </p>
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center mt-8">
               <Button size="lg" className="w-full sm:w-auto" asChild>
-                <Link to="/$id" params={{ id: "-pdYfEVVb5" }}>
+                <Link to="/$id" params={{ id: "-pdYfEVVb5" }} preload="viewport">
                   <BotMessageSquareIcon />
                   Example Session
                 </Link>

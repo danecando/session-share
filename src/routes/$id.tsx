@@ -49,6 +49,9 @@ export const Route = createFileRoute("/$id")({
   loader: async ({ params }) => {
     return loadSession({ data: params.id });
   },
+  headers: () => ({
+    "Cache-Control": "public, max-age=31536000, immutable",
+  }),
   pendingComponent: SessionLoadingView,
   component: SessionViewerPage,
   head: ({ loaderData }) => {

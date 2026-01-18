@@ -20,7 +20,7 @@
     },
   ],
   "vars": {
-    "VITE_SENTRY_DSN": "https://5c2b6a8532773312b90b9ad0da247ddc@o1235506.ingest.us.sentry.io/4510660773281792",
+    "VITE_SENTRY_DSN": "https://81730fe99b9c67667f7bb0d2f0e4bf18@o1235506.ingest.us.sentry.io/4510732027297792",
     "VITE_SENTRY_ORG": "danecando",
     "VITE_SENTRY_PROJECT": "session-share",
     "VITE_FATHOM_ID": "YNCBGGLI",
