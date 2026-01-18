@@ -6,8 +6,7 @@ A Claude Code plugin to share agent sessions to a public URL.
 
 ## Warning
 
-The plugin does not currently scrub the contents of your session to redact sensitive information. Make sure that you don't share any sessions that
-contain sensitive information.
+We **attempt** to scrub API keys, database connection strings, and other common secrets. Review your session before sharing to make sure there isn't any sensitive information that you don't want to publish.
 
 ## Install Plugin
 

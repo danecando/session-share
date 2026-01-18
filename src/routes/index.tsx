@@ -66,8 +66,10 @@ function HomePage() {
           </header>
 
           {/* Installation */}
-          <section className="w-full max-w-4xl mx-auto overflow-hidden">
-            <h2 className="text-xl sm:text-2xl font-bold text-foreground text-center">Install the Claude Code plugin</h2>
+          <section className="w-full max-w-2xl mx-auto overflow-hidden">
+            <h2 className="text-xl sm:text-2xl font-bold text-foreground text-center">
+              Install the Claude Code plugin
+            </h2>
             <div className="relative group mt-6">
               <p className="mb-2 text-center text-muted-foreground">Add the plugin marketplace</p>
               <CodeBlock>
@@ -86,8 +88,8 @@ function HomePage() {
           <section className="w-full max-w-2xl mx-auto overflow-hidden">
             <h2 className="text-xl sm:text-2xl font-bold text-foreground text-center">Share a session</h2>
             <p className="text-center text-muted-foreground mt-4 max-w-prose mx-auto px-2">
-              After installing the plugin, use the <code className="break-all">/share-session:share</code> command in Claude Code to share
-              your current session.
+              After installing the plugin, use the <code className="break-all">/share-session:share</code> command in
+              Claude Code to share your current session.
             </p>
 
             <div className="relative rounded-xl overflow-hidden border border-border/50 shadow-2xl mt-6">
@@ -103,8 +105,11 @@ function HomePage() {
               <AlertTriangleIcon className="h-4 w-4" />
               <AlertTitle>Warning</AlertTitle>
               <AlertDescription>
-                The plugin does not currently scrub the contents of your session to redact sensitive information. Make
-                sure that you don't share any sessions that contain sensitive information.
+                <p>
+                  We <strong>attempt</strong> to scrub API keys, database connection strings, and other common secrets.
+                  Review your session before sharing to make sure there isn't any sensitive information that you don't
+                  want to publish.
+                </p>
               </AlertDescription>
             </Alert>
           </section>

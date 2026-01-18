@@ -1,4 +1,5 @@
 import { parseDiffFromFile } from "@pierre/diffs";
+import { sanitizeSession } from "./sanitizer";
 import type { FileDiffMetadata } from "@pierre/diffs";
 import type { JsonValue } from "./types";
 import type {
@@ -651,7 +652,7 @@ export function ccSessionToSession(
     }
   }
 
-  return {
+  const rawSession: SessionSchema = {
     schemaVersion: "1",
     agent: {
       name: "Claude Code",
@@ -676,4 +677,7 @@ export function ccSessionToSession(
     },
     entries,
   };
+
+  // Sanitize sensitive data (API keys, tokens, passwords, etc.) before returning
+  return sanitizeSession(rawSession);
 }
