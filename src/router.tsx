@@ -21,6 +21,7 @@ export const getRouter = () => {
       integrations: [Sentry.tanstackRouterBrowserTracingIntegration(router)],
       tracesSampleRate: 0.05,
       sendDefaultPii: true,
+      enableLogs: true,
     });
   }
 

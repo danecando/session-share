@@ -16,6 +16,7 @@ Upload the current Claude Code session and get a shareable URL.
 **Minimum required version: 2.1.9**
 
 Before proceeding, verify the version from above:
+
 1. Parse the version number (e.g., "claude 2.1.9" → 2.1.9)
 2. If the version is less than 2.1.9 or cannot be determined, stop and tell the user:
    - "This command requires Claude Code version 2.1.9 or later."

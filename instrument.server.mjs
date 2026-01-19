@@ -11,5 +11,6 @@ if (!sentryDsn) {
     // https://docs.sentry.io/platforms/javascript/guides/tanstackstart-react/configuration/options/#sendDefaultPii
     sendDefaultPii: true,
     tracesSampleRate: 0.05,
+    enableLogs: true,
   });
 }

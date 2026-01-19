@@ -72,7 +72,11 @@ export function SessionNavigator({ entries }: SessionNavigatorProps) {
               <span className="sr-only">Navigate to user messages</span>
             </Button>
           </PopoverTrigger>
-          <PopoverContent side="top" align="end" className="w-[calc(100vw-2rem)] sm:w-80 max-w-80 max-h-96 overflow-y-auto p-2 pointer-events-auto">
+          <PopoverContent
+            side="top"
+            align="end"
+            className="w-[calc(100vw-2rem)] sm:w-80 max-w-80 max-h-96 overflow-y-auto p-2 pointer-events-auto"
+          >
             <div className="flex flex-col gap-1">
               <div className="px-2 py-1.5 flex items-center gap-2">
                 <div className="flex items-center justify-center shrink-0 h-5 w-5 rounded-full bg-sky-500/10 text-sky-500">

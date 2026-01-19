@@ -24,9 +24,7 @@ function UserFeedback({ feedback }: { feedback: string }) {
       <div className="flex items-center justify-center shrink-0 lg:absolute lg:-left-8 lg:top-0.5">
         <User className="h-5 w-5 text-red-500" />
       </div>
-      <div className="min-w-0 flex-1 font-medium markdown-content text-foreground whitespace-pre-wrap">
-        {feedback}
-      </div>
+      <div className="min-w-0 flex-1 font-medium markdown-content text-foreground whitespace-pre-wrap">{feedback}</div>
     </div>
   );
 }
@@ -53,9 +51,7 @@ export function PlanEntry({ entry }: PlanEntryProps) {
       {entry.status === "rejected" ? (
         <>
           {/* Title always visible for rejected plans */}
-          {entry.title && (
-            <div className="markdown-content font-medium text-foreground">Plan: {entry.title}</div>
-          )}
+          {entry.title && <div className="markdown-content font-medium text-foreground">Plan: {entry.title}</div>}
 
           {/* Plan content collapsed by default */}
           <CollapsiblePanel title="Read full plan" defaultOpen={false}>

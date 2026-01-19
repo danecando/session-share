@@ -42,6 +42,16 @@ export const Route = createFileRoute("/api/sessions")({
             },
           });
 
+          Sentry.logger.info("Session created", {
+            id: id,
+            sessionId: extracted.metadata.sessionId,
+            agentVersion: extracted.metadata.agentVersion,
+            tarballSize: tarballData.byteLength,
+            imageCount: extracted.images.size,
+            entryCount: session.entries.length,
+            gitRemote: extracted.metadata.gitRemote || null,
+          });
+
           return Response.json({ id });
         } catch (error) {
           Sentry.captureException(error);

@@ -32,20 +32,19 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         {children}
         <Toaster />
         <FathomAnalytics />
-        {typeof window !== "undefined" &&
-          window.location.hostname !== "session-share.local" && (
-            <TanStackDevtools
-              config={{
-                position: "bottom-right",
-              }}
-              plugins={[
-                {
-                  name: "Tanstack Router",
-                  render: <TanStackRouterDevtoolsPanel />,
-                },
-              ]}
-            />
-          )}
+        {typeof window !== "undefined" && window.location.hostname !== "session-share.local" && (
+          <TanStackDevtools
+            config={{
+              position: "bottom-right",
+            }}
+            plugins={[
+              {
+                name: "Tanstack Router",
+                render: <TanStackRouterDevtoolsPanel />,
+              },
+            ]}
+          />
+        )}
         <Scripts />
       </body>
     </html>

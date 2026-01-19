@@ -104,7 +104,8 @@ function getResultSummary(toolName: string, result: string | undefined): string 
       if (parseMcpToolName(toolName)) {
         try {
           const data = JSON.parse(result);
-          if (Array.isArray(data.results)) return `${data.results.length} result${data.results.length !== 1 ? "s" : ""}`;
+          if (Array.isArray(data.results))
+            return `${data.results.length} result${data.results.length !== 1 ? "s" : ""}`;
           if (Array.isArray(data.items)) return `${data.items.length} item${data.items.length !== 1 ? "s" : ""}`;
           if (Array.isArray(data.issues)) return `${data.issues.length} issue${data.issues.length !== 1 ? "s" : ""}`;
           if (Array.isArray(data)) return `${data.length} item${data.length !== 1 ? "s" : ""}`;
@@ -186,7 +187,8 @@ export function ToolCallEntry({ entry }: ToolCallEntryProps) {
 
   const title = getToolTitle();
   const isMcpTool = toolName.startsWith("mcp__");
-  const isCompactTool = isMcpTool || ["Read", "Bash", "Grep", "Glob", "Skill", "Write", "Edit", "WebFetch"].includes(toolName);
+  const isCompactTool =
+    isMcpTool || ["Read", "Bash", "Grep", "Glob", "Skill", "Write", "Edit", "WebFetch"].includes(toolName);
   const resultSummary = isCompactTool ? getResultSummary(toolName, result) : null;
   const isErrorResult = entry.result?.type === "error";
   const isExpandable = (isMcpTool || toolName === "WebFetch") && result;
@@ -202,9 +204,7 @@ export function ToolCallEntry({ entry }: ToolCallEntryProps) {
               isErrorResult ? "text-red-500/80 hover:text-red-500" : "text-foreground/80 hover:text-foreground"
             )}
           >
-            <ChevronRight
-              className={cn("h-4 w-4 shrink-0 transition-transform", isExpanded && "rotate-90")}
-            />
+            <ChevronRight className={cn("h-4 w-4 shrink-0 transition-transform", isExpanded && "rotate-90")} />
             <span className="break-all">
               {title}
               {resultSummary && (
@@ -216,7 +216,9 @@ export function ToolCallEntry({ entry }: ToolCallEntryProps) {
             </span>
           </button>
         ) : (
-          <span className={cn("font-mono font-medium break-all", isErrorResult ? "text-red-500/80" : "text-foreground/80")}>
+          <span
+            className={cn("font-mono font-medium break-all", isErrorResult ? "text-red-500/80" : "text-foreground/80")}
+          >
             {title}
             {resultSummary && (
               <span className={cn("opacity-70", isErrorResult ? "text-red-500" : "text-muted-foreground")}>
