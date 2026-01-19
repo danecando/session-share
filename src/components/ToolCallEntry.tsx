@@ -91,6 +91,14 @@ function getResultSummary(toolName: string, result: string | undefined): string 
       }
       return null;
     }
+    case "WebFetch": {
+      const trimmed = result.trim();
+      if (!trimmed) return "No content";
+      const lines = trimmed.split("\n").length;
+      if (lines > 1) return `${lines} lines`;
+      if (trimmed.length > 50) return `${trimmed.length} chars`;
+      return "Fetched";
+    }
     default: {
       // Handle MCP tools
       if (parseMcpToolName(toolName)) {
@@ -150,6 +158,18 @@ export function ToolCallEntry({ entry }: ToolCallEntryProps) {
         const label = desc || subagent;
         return label ? `Task(${label})` : "Task";
       }
+      case "WebFetch": {
+        const url = typeof input?.url === "string" ? input.url : "";
+        if (url) {
+          try {
+            const domain = new URL(url).hostname;
+            return `WebFetch(${domain})`;
+          } catch {
+            return `WebFetch(${url.slice(0, 30)}...)`;
+          }
+        }
+        return "WebFetch";
+      }
       default: {
         const mcpInfo = parseMcpToolName(toolName);
         if (mcpInfo) {
@@ -166,10 +186,10 @@ export function ToolCallEntry({ entry }: ToolCallEntryProps) {
 
   const title = getToolTitle();
   const isMcpTool = toolName.startsWith("mcp__");
-  const isCompactTool = isMcpTool || ["Read", "Bash", "Grep", "Glob", "Skill", "Write", "Edit"].includes(toolName);
+  const isCompactTool = isMcpTool || ["Read", "Bash", "Grep", "Glob", "Skill", "Write", "Edit", "WebFetch"].includes(toolName);
   const resultSummary = isCompactTool ? getResultSummary(toolName, result) : null;
   const isErrorResult = entry.result?.type === "error";
-  const isExpandable = isMcpTool && result;
+  const isExpandable = (isMcpTool || toolName === "WebFetch") && result;
 
   return (
     <div className="space-y-2 min-w-0">

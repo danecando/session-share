@@ -43,6 +43,8 @@ const HIDDEN_USER_PREFIXES = [
   "<command-args>",
   "<local-command-stdout>",
   "<command-name>/share", // Filter share plugin
+  "Implement the following plan:", // Filter plan approval injections
+  "[Request interrupted by user for tool use]", // Filter plan interruption
 ];
 
 function isHiddenUserMessage(text: string): boolean {
@@ -58,10 +60,11 @@ function isShareRelatedBashCommand(command: string): boolean {
   return false;
 }
 
+// Marker added to share-related messages for reliable detection
+const SESSION_SHARE_MARKER = "<!--session-share-->";
+
 function isShareAnnouncementMessage(text: string): boolean {
-  const hasShareUrl = /(?:share\.crapola\.ai|localhost:\d+)\/[\w-]+/.test(text);
-  const hasSharePhrase = /session has been shared|shareable URL|share command|upload.*session/i.test(text);
-  return hasShareUrl && hasSharePhrase;
+  return text.includes(SESSION_SHARE_MARKER);
 }
 
 function isPlanPath(filePath: string): boolean {
@@ -220,7 +223,10 @@ export function ccSessionToSession(
   const taskIds = new Set<string>();
   const seenParentTypeKeys = new Set<string>();
   const skippedUuids = new Set<string>();
+  const skippedToolIds = new Set<string>();
   const modelsUsed = new Set<string>();
+  // Track rejected plans for "accept and clear context" detection
+  const rejectedPlanEntries = new Map<string, PlanEntry>();
 
   let currentTask: TaskEntry | null = null;
 
@@ -467,6 +473,7 @@ export function ccSessionToSession(
           if (toolName === "Bash") {
             const command = typeof input.command === "string" ? input.command : "";
             if (isShareRelatedBashCommand(command)) {
+              if (part.id) skippedToolIds.add(part.id);
               continue;
             }
           }
@@ -491,6 +498,12 @@ export function ccSessionToSession(
         if (part.type === "tool_result") {
           currentTask = null;
           const toolUseId = part.tool_use_id;
+
+          // Skip results for share-related tools that were filtered out
+          if (toolUseId && skippedToolIds.has(toolUseId)) {
+            skippedToolIds.delete(toolUseId);
+            continue;
+          }
 
           // Skip task results (all Task types)
           if (toolUseId && taskIds.has(toolUseId)) {
@@ -520,7 +533,7 @@ export function ccSessionToSession(
             continue;
           }
 
-          // Handle plan results
+          // Handle plan results (see cc-format.md for detailed documentation)
           if (toolUseId && plansByToolId.has(toolUseId)) {
             const planText = plansByToolId.get(toolUseId)!;
             const title = extractPlanTitle(planText);
@@ -561,6 +574,11 @@ export function ccSessionToSession(
             };
             entries.push(planEntry);
             plansByToolId.delete(toolUseId);
+
+            // Store rejected plans for "accept and clear context" detection
+            if (status === "rejected") {
+              rejectedPlanEntries.set(planText, planEntry);
+            }
             continue;
           }
 
@@ -608,6 +626,34 @@ export function ccSessionToSession(
     // Create message entry if we have content or images
     if (messageParts.length > 0 || messageImages.length > 0) {
       const combinedText = messageParts.join("\n");
+
+      // Detect "accept and clear context" pattern for plans
+      // When user accepts a plan with "Accept and clear context", Claude Code:
+      // 1. Writes a tool result with "rejected/doesn't want to proceed" (which we mark as rejected)
+      // 2. Then writes an "Implement the following plan:" user message
+      // The presence of this message means the plan was actually approved
+      if (role === "user" && messageImages.length === 0) {
+        const trimmed = combinedText.trim();
+        const implementPrefix = "Implement the following plan:";
+        if (trimmed.startsWith(implementPrefix)) {
+          const planContent = trimmed.slice(implementPrefix.length).trim();
+          // Check if planContent starts with any rejected plan
+          // (planContent may have extra text appended by Claude Code)
+          for (const [planText, planEntry] of rejectedPlanEntries) {
+            if (planContent.startsWith(planText)) {
+              planEntry.status = "approved";
+              // Update plan title if this is first approved
+              if (!planTitleApproved) {
+                planTitle = planEntry.title;
+                planTitleApproved = true;
+              }
+              rejectedPlanEntries.delete(planText);
+              break;
+            }
+          }
+          continue; // Still hide this synthetic message
+        }
+      }
 
       // Skip hidden user messages (but keep if has images)
       if (role === "user" && isHiddenUserMessage(combinedText) && messageImages.length === 0) {

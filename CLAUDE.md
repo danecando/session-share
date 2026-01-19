@@ -50,6 +50,23 @@ Two schema layers exist:
 
 The `cc-converter.ts` transforms the raw JSONL into the session schema, handling deduplication, filtering share-related entries, and extracting metadata.
 
+### Claude Code Session Files
+
+Claude Code stores session data in `~/.claude/projects/`. Each project has a hashed directory name containing:
+
+```
+~/.claude/projects/<project-hash>/
+├── sessions/
+│   └── <session-id>.jsonl    # Session transcript (one JSON object per line)
+├── images/
+│   └── <image-id>.png        # Screenshots and images referenced in session
+└── ...
+```
+
+- **Project hash**: Derived from the absolute path of the project directory
+- **Session JSONL**: Contains `CCLogEntry` objects (see `src/lib/cc-schema.ts`)
+- **Images**: Referenced by content parts with `type: "image"` and a `source.url` starting with `file://`
+
 ### Key Files
 
 - `plugin/scripts/share-session.sh` - Session packaging and upload
@@ -64,6 +81,12 @@ The `cc-converter.ts` transforms the raw JSONL into the session schema, handling
 - R2 bucket `session-share-sessions` for storage
 - Sentry for error tracking
 - Fathom for analytics
+
+## Workflow
+
+- **Don't build after every change.** Only run verification after editing actual source code (`.ts`, `.tsx` files in `src/`).
+- **Use `pnpm check-types && pnpm lint`** for verification, not `pnpm build`. Build is slow and only needed for deployment.
+- Skip verification entirely for non-source changes (markdown, config, tests).
 
 ## Environment Variables
 

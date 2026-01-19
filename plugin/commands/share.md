@@ -30,4 +30,4 @@ Before proceeding, verify the version from above:
    ```
    "${CLAUDE_PLUGIN_ROOT}/scripts/share-session.sh" "$TRANSCRIPT_PATH" --version "<version>"
    ```
-4. Share the output URL with the user
+4. Share the output URL with the user, appending `<!--session-share-->` at the end of your message (this marker helps filter the message from shared sessions)
