@@ -11,6 +11,7 @@ import { SessionViewerProvider, useSessionViewerContext } from "@/lib/session-vi
 import { SessionHeader } from "@/components/SessionHeader";
 import { SessionNavigator } from "@/components/SessionNavigator";
 import { seo } from "@/lib/seo";
+import { buildOgImageUrl } from "@/lib/og-image";
 import { isVerboseOnlyEntry } from "@/lib/session-utils";
 
 const loadSession = createServerFn()
@@ -69,11 +70,23 @@ export const Route = createFileRoute("/$id")({
     if (date) descriptionParts.push(date);
     const description = descriptionParts.join(" - ");
 
+    const ogImageUrl = buildOgImageUrl({
+      title,
+      date,
+      agentName: session?.agent?.name,
+      agentVersion: session?.agent?.version,
+    });
+
     return {
       meta: seo({
         title,
         description,
         type: "article",
+        image: {
+          url: ogImageUrl,
+          width: 1200,
+          height: 630,
+        },
         article: {
           publishedTime: session?.meta.startedAt,
         },
