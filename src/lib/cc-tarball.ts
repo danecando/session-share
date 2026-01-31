@@ -14,6 +14,7 @@ export type ExtractedTarball = {
   metadata: BundleMetadata;
   jsonlContent: string;
   images: Map<string, ExtractedImage>;
+  sourceJsonlContent?: string;
 };
 
 // MARK: Main Extraction Function
@@ -36,6 +37,7 @@ export async function extractTarball(data: ArrayBuffer): Promise<ExtractedTarbal
   return new Promise((resolve, reject) => {
     let metadata: BundleMetadata | null = null;
     let jsonlContent = "";
+    let sourceJsonlContent: string | undefined;
     const images = new Map<string, ExtractedImage>();
 
     const parser = new Parser({
@@ -51,6 +53,8 @@ export async function extractTarball(data: ArrayBuffer): Promise<ExtractedTarbal
           } else if (name.endsWith(".jsonl") && !name.includes("/")) {
             const content = Buffer.concat(chunks).toString("utf-8");
             jsonlContent = content;
+          } else if (name === "source-session.jsonl") {
+            sourceJsonlContent = Buffer.concat(chunks).toString("utf-8");
           } else if (name.startsWith("images/")) {
             const mimeType = getMimeType(name);
             if (mimeType) {
@@ -72,7 +76,7 @@ export async function extractTarball(data: ArrayBuffer): Promise<ExtractedTarbal
       } else if (!jsonlContent) {
         reject(new Error("Missing JSONL file in tarball"));
       } else {
-        resolve({ metadata, jsonlContent, images });
+        resolve({ metadata, jsonlContent, images, sourceJsonlContent });
       }
     });
 

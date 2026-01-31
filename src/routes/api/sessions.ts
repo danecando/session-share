@@ -32,7 +32,7 @@ export const Route = createFileRoute("/api/sessions")({
 
         try {
           const extracted = await extractTarball(tarballData);
-          const session = ccSessionToSession(extracted.jsonlContent, extracted.images, extracted.metadata);
+          const session = ccSessionToSession(extracted.jsonlContent, extracted.images, extracted.metadata, extracted.sourceJsonlContent);
 
           const id = nanoid(10);
 

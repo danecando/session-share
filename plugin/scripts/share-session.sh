@@ -109,6 +109,13 @@ for img_path in $image_paths; do
   fi
 done
 
+# If this is an "accept and clear context" session, bundle the source session too
+source_jsonl=$(grep -m1 '"planContent"' "$input_path" | \
+  grep -oE '/[^"]+/[a-f0-9-]+\.jsonl' | head -1 || true)
+if [[ -n "$source_jsonl" && -f "$source_jsonl" ]]; then
+  cp -p "$source_jsonl" "$stage_dir/source-session.jsonl"
+fi
+
 # Write plain text metadata
 cat > "$stage_dir/metadata.txt" <<EOF
 BUNDLE_VERSION=1

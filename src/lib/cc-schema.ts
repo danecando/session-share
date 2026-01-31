@@ -103,6 +103,13 @@ export type CCCodePart = {
   language?: string;
 };
 
+export type CCTaskResult = {
+  task?: { id: string; subject?: string; status?: string };
+  success?: boolean;
+  taskId?: string;
+  statusChange?: { from: string; to: string };
+};
+
 export type CCBaseEntry = {
   uuid?: string;
   parentUuid?: string | null;
@@ -120,11 +127,13 @@ export type CCBaseEntry = {
   isCompactSummary?: boolean;
   thinkingMetadata?: CCThinkingMetadata;
   todos?: Array<CCTodo>;
-  toolUseResult?: CCToolUseResult;
+  toolUseResult?: CCToolUseResult | CCTaskResult | string;
   requestId?: string;
   level?: string;
   subtype?: string;
   content?: string;
+  planContent?: string;
+  permissionMode?: string;
 };
 
 // MARK: Snapshot Entries
