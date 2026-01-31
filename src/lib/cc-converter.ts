@@ -186,10 +186,41 @@ function normalizeQuestions(input: unknown): Array<{ question: string }> {
     .map((item) => ({ question: item.question }));
 }
 
+function findLastIndex<T>(arr: Array<T>, predicate: (item: T) => boolean): number {
+  for (let i = arr.length - 1; i >= 0; i--) {
+    if (predicate(arr[i])) return i;
+  }
+  return -1;
+}
+
 function generateDiff(oldText: string, newText: string, filePath: string): FileDiffMetadata {
   const oldFile = { name: filePath, contents: oldText };
   const newFile = { name: filePath, contents: newText };
   return parseDiffFromFile(oldFile, newFile);
+}
+
+function extractFirstUserPrompt(jsonlContent: string): string | undefined {
+  for (const line of jsonlContent.split(/\r?\n/)) {
+    if (!line) continue;
+    try {
+      const obj = JSON.parse(line);
+      if (obj.type !== "user" || obj.isMeta || !obj.message) continue;
+      const content = obj.message.content;
+      const text =
+        typeof content === "string"
+          ? content
+          : Array.isArray(content)
+            ? content
+                .filter((p: Record<string, unknown>) => p.type === "text")
+                .map((p: Record<string, unknown>) => p.text)
+                .join("\n")
+            : undefined;
+      if (text && text.trim() && !text.trim().startsWith("<")) return text.trim();
+    } catch {
+      continue;
+    }
+  }
+  return undefined;
 }
 
 // MARK: Main Parser
@@ -197,9 +228,13 @@ function generateDiff(oldText: string, newText: string, filePath: string): FileD
 export function ccSessionToSession(
   jsonlContent: string,
   images?: Map<string, ExtractedImage>,
-  bundleMetadata?: BundleMetadata
+  bundleMetadata?: BundleMetadata,
+  sourceJsonlContent?: string
 ): SessionSchema {
   const lines = jsonlContent.split(/\r?\n/).filter(Boolean);
+
+  // Extract original user prompt from source planning session (if bundled)
+  const sourcePrompt = sourceJsonlContent ? extractFirstUserPrompt(sourceJsonlContent) : undefined;
 
   // Session metadata
   let sessionId = "";
@@ -227,6 +262,12 @@ export function ccSessionToSession(
   const modelsUsed = new Set<string>();
   // Track rejected plans for "accept and clear context" detection
   const rejectedPlanEntries = new Map<string, PlanEntry>();
+
+  // Task tool state tracking (TaskCreate/TaskUpdate/TaskList/TaskGet)
+  const taskToolIds = new Set<string>();
+  const taskState = new Map<string, { subject: string; description: string; status: string; activeForm?: string }>();
+  // Temporary mapping: tool_use_id → task data (before we know the real task ID from the result)
+  const pendingTaskCreates = new Map<string, { subject: string; description: string; status: string; activeForm?: string }>();
 
   let currentTask: TaskEntry | null = null;
 
@@ -294,6 +335,35 @@ export function ccSessionToSession(
 
     // Skip transcript-only messages (e.g., context continuation summaries after compaction)
     if (obj.isVisibleInTranscriptOnly) continue;
+
+    // Handle planContent field on user messages (new Claude Code format)
+    if (obj.type === "user" && "planContent" in obj && typeof (obj as Record<string, unknown>).planContent === "string") {
+      const planText = (obj as Record<string, unknown>).planContent as string;
+      const title = extractPlanTitle(planText);
+      if (!planTitle) planTitle = title;
+      planTitleApproved = true;
+      planTitle = title;
+
+      // Inject original user prompt from source planning session (if available)
+      if (sourcePrompt) {
+        const promptEntry: MessageEntry = {
+          type: "message",
+          role: "user",
+          content: [sourcePrompt],
+        };
+        entries.push(promptEntry);
+      }
+
+      const planEntry: PlanEntry = {
+        type: "plan",
+        status: "approved",
+        title,
+        content: planText,
+        ...(obj.uuid && { parentId: obj.uuid }),
+      };
+      entries.push(planEntry);
+      continue;
+    }
 
     const message = obj.message;
 
@@ -413,6 +483,49 @@ export function ccSessionToSession(
             continue;
           }
 
+          // Handle Task* tools (TaskCreate, TaskUpdate, TaskList, TaskGet)
+          if (toolName === "TaskCreate" || toolName === "TaskUpdate" ||
+              toolName === "TaskList" || toolName === "TaskGet") {
+            if (part.id) taskToolIds.add(part.id);
+
+            if (toolName === "TaskCreate" && part.id) {
+              const subject = typeof input.subject === "string" ? input.subject : "";
+              const description = typeof input.description === "string" ? input.description : "";
+              const status = typeof input.status === "string" ? input.status : "pending";
+              const activeForm = typeof input.activeForm === "string" ? input.activeForm : undefined;
+              pendingTaskCreates.set(part.id, { subject, description, status, activeForm });
+            }
+
+            if (toolName === "TaskUpdate" && typeof input.taskId === "string") {
+              const taskId = input.taskId;
+              const existing = taskState.get(taskId);
+              if (existing) {
+                if (typeof input.status === "string") existing.status = input.status;
+                if (typeof input.subject === "string") existing.subject = input.subject;
+                if (typeof input.description === "string") existing.description = input.description;
+
+                // Emit updated todo_list - replace last one or append
+                const todoEntry: TodoListEntry = {
+                  type: "todo_list",
+                  todos: Array.from(taskState.values()).map(t => ({
+                    content: t.subject,
+                    status: t.status === "completed" ? "completed" as const
+                         : t.status === "in_progress" ? "in_progress" as const
+                         : "pending" as const,
+                  })),
+                  ...(obj.uuid && { parentId: obj.uuid }),
+                };
+                const lastTodoIdx = findLastIndex(entries, (e: SessionEntry) => e.type === "todo_list");
+                if (lastTodoIdx !== -1) {
+                  entries[lastTodoIdx] = todoEntry;
+                } else {
+                  entries.push(todoEntry);
+                }
+              }
+            }
+            continue;
+          }
+
           // Handle TodoWrite
           if (toolName === "TodoWrite" && Array.isArray(input.todos)) {
             const todoEntry: TodoListEntry = {
@@ -505,9 +618,57 @@ export function ccSessionToSession(
             continue;
           }
 
-          // Skip task results (all Task types)
+          // Skip task results (all Task subagent types)
           if (toolUseId && taskIds.has(toolUseId)) {
             taskIds.delete(toolUseId);
+            continue;
+          }
+
+          // Handle Task* tool results (TaskCreate, TaskUpdate, TaskList, TaskGet)
+          if (toolUseId && taskToolIds.has(toolUseId)) {
+            taskToolIds.delete(toolUseId);
+
+            // For TaskCreate results, extract the real task ID from toolUseResult
+            if (pendingTaskCreates.has(toolUseId)) {
+              const taskData = pendingTaskCreates.get(toolUseId)!;
+              pendingTaskCreates.delete(toolUseId);
+
+              // Try to get task ID from toolUseResult on the entry
+              const toolUseResult = (obj as Record<string, unknown>).toolUseResult;
+              let realTaskId: string | undefined;
+              if (toolUseResult && typeof toolUseResult === "object" && !Array.isArray(toolUseResult)) {
+                const result = toolUseResult as Record<string, unknown>;
+                if (result.task && typeof result.task === "object") {
+                  const task = result.task as Record<string, unknown>;
+                  if (typeof task.id === "string") realTaskId = task.id;
+                }
+              }
+
+              if (realTaskId) {
+                taskState.set(realTaskId, taskData);
+              } else {
+                // Fallback: use tool_use_id as key
+                taskState.set(toolUseId, taskData);
+              }
+
+              // Emit todo_list entry - replace last one or append
+              const todoEntry: TodoListEntry = {
+                type: "todo_list",
+                todos: Array.from(taskState.values()).map(t => ({
+                  content: t.subject,
+                  status: t.status === "completed" ? "completed" as const
+                       : t.status === "in_progress" ? "in_progress" as const
+                       : "pending" as const,
+                })),
+                ...(obj.uuid && { parentId: obj.uuid }),
+              };
+              const lastTodoIdx = findLastIndex(entries, (e: SessionEntry) => e.type === "todo_list");
+              if (lastTodoIdx !== -1) {
+                entries[lastTodoIdx] = todoEntry;
+              } else {
+                entries.push(todoEntry);
+              }
+            }
             continue;
           }
 
@@ -582,8 +743,10 @@ export function ccSessionToSession(
             continue;
           }
 
-          // Skip TodoWrite results
-          if (toolName === "TodoWrite") continue;
+          // Skip TodoWrite and Task* tool results
+          if (toolName === "TodoWrite" || toolName === "TaskCreate" ||
+              toolName === "TaskUpdate" || toolName === "TaskList" ||
+              toolName === "TaskGet") continue;
 
           // Skip Write/Edit results (already handled)
           if (toolName === "Write" || toolName === "Edit") continue;
